@@ -1,6 +1,7 @@
 # Cryptopals Challenges Solutions
 
-[The Challenge](https://cryptopals.com/)
+- [The Challenge](https://cryptopals.com/)
+- I will jot down write-ups of each challenge in [my personal blog](https://paolobroglio.github.io/) 
 
 ## Set 1
 
