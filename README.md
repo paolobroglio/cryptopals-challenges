@@ -7,9 +7,9 @@
 
 [Set 1](https://cryptopals.com/sets/1)
 
-- [x] Convert hex to base64
-- [x] Fixed XOR
-- [x] Single-byte XOR cipher
+- [x] [Convert hex to base64](base64encoder.go)
+- [x] [Fixed XOR](utils.go)
+- [x] [Single-byte XOR cipher](cipher.go)
 - [ ] Detect single-character XOR
 - [ ] Implement repeating-key XOR
 - [ ] Break repeating-key XOR
