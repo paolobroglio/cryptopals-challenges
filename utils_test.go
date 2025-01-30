@@ -28,3 +28,11 @@ func TestFixedXOR(t *testing.T) {
 		t.Fatalf(`error`)
 	}
 }
+
+func TestGetChi2(t *testing.T) {
+	actual := GetChi2("Cooking MC's like a pound of bacon")
+	threshold := 40.0
+	if actual >= threshold {
+		t.Fatalf(`GetChi2(Cooking MC's like a pound of bacon), threshold = %f, actual = %f`, threshold, actual)
+	}
+}

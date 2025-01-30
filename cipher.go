@@ -1,9 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"math"
 	"sync"
 )
+
+type SingleByteXORCipherResult struct {
+	score      float64
+	deciphered string
+}
 
 func SingleByteXORCipher(input string, key byte) ([]byte, error) {
 	data, err := ConvertHexStringToByteArray(input)
@@ -18,11 +23,11 @@ func SingleByteXORCipher(input string, key byte) ([]byte, error) {
 	return decoded, nil
 }
 
-func CharacterFrequencySingleByteXORCipher(input string) {
+func CharacterFrequencySingleByteXORCipher(input string) string {
 	lettersFrequencies := GetLettersFrequencies()
 
 	var wg sync.WaitGroup
-	results := make(chan []byte)
+	results := make(chan SingleByteXORCipherResult)
 
 	for _, letterFrequency := range lettersFrequencies {
 		wg.Add(1)
@@ -30,7 +35,12 @@ func CharacterFrequencySingleByteXORCipher(input string) {
 		go func() {
 			defer wg.Done()
 			data, _ := SingleByteXORCipher(input, key[0])
-			results <- data
+			score := GetChi2(string(data))
+			res := SingleByteXORCipherResult{
+				score:      score,
+				deciphered: string(data),
+			}
+			results <- res
 		}()
 	}
 
@@ -39,8 +49,14 @@ func CharacterFrequencySingleByteXORCipher(input string) {
 		close(results)
 	}()
 
+	mininumScore := math.Inf(1)
+	mostProbableText := ""
 	for res := range results {
-		fmt.Printf("Deciphered: %s\n", string(res))
+		if res.score < mininumScore {
+			mininumScore = res.score
+			mostProbableText = res.deciphered
+		}
 	}
 
+	return mostProbableText
 }
