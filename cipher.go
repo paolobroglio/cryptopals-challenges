@@ -2,10 +2,14 @@ package main
 
 import (
 	"bufio"
-	"encoding/hex"
 	"fmt"
 	"os"
 )
+
+type SingleByteXORResult struct {
+	plaintext string
+	score     float64
+}
 
 func singleByteXORCipher(data []byte, key byte) []byte {
 	decoded := make([]byte, len(data))
@@ -19,9 +23,12 @@ func singleByteXORCipher(data []byte, key byte) []byte {
 	return decoded
 }
 
-func detectSingleByteXOR(hexString string) (string, float64) {
+func detectSingleByteXOR(hexString string) (SingleByteXORResult, error) {
 
-	data, _ := hex.DecodeString(hexString) // TODO: error handling
+	data, err := ConvertHexStringToByteArray(hexString)
+	if err != nil {
+		return SingleByteXORResult{}, err
+	}
 	bestScore := 0.0
 	bestPlaintext := ""
 
@@ -33,7 +40,12 @@ func detectSingleByteXOR(hexString string) (string, float64) {
 			bestPlaintext = plaintext
 		}
 	}
-	return bestPlaintext, bestScore
+
+	result := SingleByteXORResult{
+		plaintext: bestPlaintext,
+		score:     bestScore,
+	}
+	return result, nil
 }
 
 func detectSingleCharacterXORInFile(filename string) {
@@ -49,10 +61,14 @@ func detectSingleCharacterXORInFile(filename string) {
 	bestOverallPlaintext := ""
 
 	for scanner.Scan() {
-		plaintext, score := detectSingleByteXOR(scanner.Text())
-		if score > bestOverallScore {
-			bestOverallScore = score
-			bestOverallPlaintext = plaintext
+		result, err := detectSingleByteXOR(scanner.Text())
+		if err != nil {
+			fmt.Println("Error during decryption:", err)
+			return
+		}
+		if result.score > bestOverallScore {
+			bestOverallScore = result.score
+			bestOverallPlaintext = result.plaintext
 		}
 	}
 
@@ -61,12 +77,13 @@ func detectSingleCharacterXORInFile(filename string) {
 
 func repeatingKeyXORCipher(plaintext string, key string) string {
 	data := []byte(plaintext)
-	encrypted := make([]byte, 0)
+	encrypted := make([]byte, len(data))
 	for i, b := range data {
-		currKeyByte := byte(key[i%len(key)])
-		encrypted = append(encrypted, b^currKeyByte)
+		keyIndex := i % len(key)
+		currKeyByte := byte(key[keyIndex])
+		xor := b ^ currKeyByte
+		encrypted[i] = xor
 	}
 	hexString := ConvertByteArrayToHexString(encrypted)
-	fmt.Printf("Best decoded string: %s\n", hexString)
-	return ""
+	return hexString
 }
