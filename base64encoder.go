@@ -2,7 +2,7 @@ package main
 
 const base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
-func Encode(input string) (string, error) {
+func encode(input string) (string, error) {
 	// Convert HEX string to byte array
 	bytes, err := ConvertHexStringToByteArray(input)
 	if err != nil {

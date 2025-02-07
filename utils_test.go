@@ -20,11 +20,19 @@ func TestFixedXOR(t *testing.T) {
 	bBuffer, _ := ConvertHexStringToByteArray("686974207468652062756c6c277320657965")
 	expected, _ := ConvertHexStringToByteArray("746865206b696420646f6e277420706c6179")
 
-	result, err := FixedXOR(aBuffer, bBuffer)
+	result, err := fixedXOR(aBuffer, bBuffer)
 	if err != nil {
 		t.Fatalf(`FixedXOR(...,...), error = %v`, err)
 	}
 	if !reflect.DeepEqual(expected, result) {
 		t.Fatalf(`error`)
+	}
+}
+
+func TestScoreText(t *testing.T) {
+	result := int(scoreText("NOW THAT THE PARTY IS JUMPING"))
+	expected := 140
+	if result != expected {
+		t.Fatalf(`scoreText(NOW THAT THE PARTY IS JUMPING) = %d, wanted = %d`, result, expected)
 	}
 }
