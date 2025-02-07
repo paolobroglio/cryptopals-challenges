@@ -10,7 +10,7 @@
 - [x] [Convert hex to base64](base64encoder.go)
 - [x] [Fixed XOR](utils.go)
 - [x] [Single-byte XOR cipher](cipher.go)
-- [ ] Detect single-character XOR
+- [x] [Detect single-character XOR](cipher.go)
 - [ ] Implement repeating-key XOR
 - [ ] Break repeating-key XOR
 - [ ] AES in ECB mode
