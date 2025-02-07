@@ -1,5 +1,5 @@
 package main
 
 func main() {
-	detectSingleCharacterXORInFile("resources/4.txt")
+	repeatingKeyXORCipher("Burning 'em, if you ain't quick and nimble", "ICE")
 }
