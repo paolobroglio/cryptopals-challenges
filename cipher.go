@@ -1,62 +1,63 @@
 package main
 
 import (
-	"math"
-	"sync"
+	"bufio"
+	"encoding/hex"
+	"fmt"
+	"os"
 )
 
-type SingleByteXORCipherResult struct {
-	score      float64
-	deciphered string
-}
-
-func SingleByteXORCipher(input string, key byte) ([]byte, error) {
-	data, err := ConvertHexStringToByteArray(input)
+func singleByteXORCipher(input string, key byte) (string, error) {
+	data, err := hex.DecodeString(input)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	decoded := make([]byte, len(data))
 	for i := 0; i < len(data); i++ {
 		decodedByte := data[i] ^ key
+		if decodedByte == 0 {
+			decodedByte = ' '
+		}
 		decoded[i] = decodedByte
 	}
-	return decoded, nil
+	return string(decoded), nil
 }
 
-func CharacterFrequencySingleByteXORCipher(input string) string {
-	lettersFrequencies := GetLettersFrequencies()
+func detectSingleByteXOR(hexString string) (string, float64) {
 
-	var wg sync.WaitGroup
-	results := make(chan SingleByteXORCipherResult)
+	bestScore := 0.0
+	bestPlaintext := ""
 
-	for _, letterFrequency := range lettersFrequencies {
-		wg.Add(1)
-		key := []byte(string(letterFrequency))
-		go func() {
-			defer wg.Done()
-			data, _ := SingleByteXORCipher(input, key[0])
-			score := GetChi2(string(data))
-			res := SingleByteXORCipherResult{
-				score:      score,
-				deciphered: string(data),
-			}
-			results <- res
-		}()
+	for key := 0; key < 256; key++ {
+		plaintext, _ := singleByteXORCipher(hexString, byte(key))
+		score := scoreText(plaintext)
+		if score > bestScore {
+			bestScore = score
+			bestPlaintext = plaintext
+		}
 	}
+	return bestPlaintext, bestScore
+}
 
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
+func detectSingleCharacterXORInFile(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
 
-	mininumScore := math.Inf(1)
-	mostProbableText := ""
-	for res := range results {
-		if res.score < mininumScore {
-			mininumScore = res.score
-			mostProbableText = res.deciphered
+	scanner := bufio.NewScanner(file)
+	bestOverallScore := 0.0
+	bestOverallPlaintext := ""
+
+	for scanner.Scan() {
+		plaintext, score := detectSingleByteXOR(scanner.Text())
+		if score > bestOverallScore {
+			bestOverallScore = score
+			bestOverallPlaintext = plaintext
 		}
 	}
 
-	return mostProbableText
+	fmt.Printf("Best decoded string: %q\n", bestOverallPlaintext)
 }
