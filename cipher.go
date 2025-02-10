@@ -2,16 +2,16 @@ package main
 
 import (
 	"bufio"
-	"encoding/hex"
 	"fmt"
 	"os"
 )
 
-func singleByteXORCipher(input string, key byte) (string, error) {
-	data, err := hex.DecodeString(input)
-	if err != nil {
-		return "", err
-	}
+type SingleByteXORResult struct {
+	plaintext string
+	score     float64
+}
+
+func singleByteXORCipher(data []byte, key byte) []byte {
 	decoded := make([]byte, len(data))
 	for i := 0; i < len(data); i++ {
 		decodedByte := data[i] ^ key
@@ -20,23 +20,32 @@ func singleByteXORCipher(input string, key byte) (string, error) {
 		}
 		decoded[i] = decodedByte
 	}
-	return string(decoded), nil
+	return decoded
 }
 
-func detectSingleByteXOR(hexString string) (string, float64) {
+func detectSingleByteXOR(hexString string) (SingleByteXORResult, error) {
 
+	data, err := ConvertHexStringToByteArray(hexString)
+	if err != nil {
+		return SingleByteXORResult{}, err
+	}
 	bestScore := 0.0
 	bestPlaintext := ""
 
 	for key := 0; key < 256; key++ {
-		plaintext, _ := singleByteXORCipher(hexString, byte(key))
+		plaintext := string(singleByteXORCipher(data, byte(key)))
 		score := scoreText(plaintext)
 		if score > bestScore {
 			bestScore = score
 			bestPlaintext = plaintext
 		}
 	}
-	return bestPlaintext, bestScore
+
+	result := SingleByteXORResult{
+		plaintext: bestPlaintext,
+		score:     bestScore,
+	}
+	return result, nil
 }
 
 func detectSingleCharacterXORInFile(filename string) {
@@ -52,12 +61,29 @@ func detectSingleCharacterXORInFile(filename string) {
 	bestOverallPlaintext := ""
 
 	for scanner.Scan() {
-		plaintext, score := detectSingleByteXOR(scanner.Text())
-		if score > bestOverallScore {
-			bestOverallScore = score
-			bestOverallPlaintext = plaintext
+		result, err := detectSingleByteXOR(scanner.Text())
+		if err != nil {
+			fmt.Println("Error during decryption:", err)
+			return
+		}
+		if result.score > bestOverallScore {
+			bestOverallScore = result.score
+			bestOverallPlaintext = result.plaintext
 		}
 	}
 
 	fmt.Printf("Best decoded string: %q\n", bestOverallPlaintext)
+}
+
+func repeatingKeyXORCipher(plaintext string, key string) string {
+	data := []byte(plaintext)
+	encrypted := make([]byte, len(data))
+	for i, b := range data {
+		keyIndex := i % len(key)
+		currKeyByte := byte(key[keyIndex])
+		xor := b ^ currKeyByte
+		encrypted[i] = xor
+	}
+	hexString := ConvertByteArrayToHexString(encrypted)
+	return hexString
 }
