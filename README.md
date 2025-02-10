@@ -11,7 +11,7 @@
 - [x] [Fixed XOR](utils.go)
 - [x] [Single-byte XOR cipher](cipher.go)
 - [x] [Detect single-character XOR](cipher.go)
-- [ ] Implement repeating-key XOR
+- [x] [Implement repeating-key XOR](cipher.go)
 - [ ] Break repeating-key XOR
 - [ ] AES in ECB mode
 - [ ] Detect AES in ECB mode
